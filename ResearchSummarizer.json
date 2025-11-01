@@ -1,0 +1,318 @@
+{
+  "name": "ResearchSummarizer",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://export.arxiv.org/api/query?search_query=all:quantum+computing&start=0&max_results=5",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "search_query",
+              "value": "=all:{{ $json[\"message\"][\"text\"] }}"
+            },
+            {
+              "name": "start",
+              "value": "0"
+            },
+            {
+              "name": "max_results",
+              "value": "5"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text",
+              "outputPropertyName": "body"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        16
+      ],
+      "id": "d80c76cc-838d-4673-80a3-d4984c8f912a",
+      "name": "Search arXiv Papers",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access raw data safely\nconst rawData = $json.data || $json.body || $json; \n\n// If rawData is an object (not string), convert it\nconst xmlString = typeof rawData === \"string\" ? rawData : JSON.stringify(rawData);\n\n// Extract <entry> elements\nconst entries = xmlString.split(\"<entry>\").slice(1, 6);\n\nconst papers = entries.map(entry => {\n  const title = entry.match(/<title>(.*?)<\\/title>/s)?.[1]?.trim() || \"No title found\";\n  const summary = entry.match(/<summary>(.*?)<\\/summary>/s)?.[1]?.trim() || \"No summary available\";\n  return { title, summary };\n});\n\nreturn [{ papers }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -128
+      ],
+      "id": "66a846c9-1989-4eb3-97fb-380972997dd1",
+      "name": "Format arXiv Results",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{$node[\"Google Docs - Create\"].json[\"id\"]}}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=AI Research Summary on {{$node[\"AI Agent\"].json[\"output\"]|| \"No summary generated.\"}}\n"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -96
+      ],
+      "id": "7e36ad14-3c0f-4885-a102-cbaa95611714",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "HoxUny5FVlUMnQqG",
+          "name": "Google Docs account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "sreenavyach15@gmail.com",
+        "subject": "=Research Summary – {{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}",
+        "message": "=<p>Hi there,</p>\n<p>Your research summary on <b>{{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}</b> is ready!</p>\n<p>Here's the link to view it:<br>\n<a href=\"{{$node[\"Google Drive - Search\"].json[\"webViewLink\"]}}\" target=\"_blank\">Open Google Doc</a></p>\n<p>Best,<br>\nYour Research Assistant 🤖</p>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1776,
+        96
+      ],
+      "id": "761324ab-2afa-420a-9ee1-d70c70d802d5",
+      "name": "Send a message",
+      "webhookId": "fa217e3f-1d85-4d5a-b363-ec080ddb50f2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oQlHeSoDDVdKSBO6",
+          "name": "Gmail account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI research assistant. Your task is to write a concise synthesis (500–600 words) and 5 key insights.\n\nResearch Topic: {{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}\n\nAbstracts:\n{{$json[\"papers\"].map(p => p.summary).join(\"\\n\\n\")}}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        -64
+      ],
+      "id": "be9c4d8d-a850-43e8-b541-1fb9bcb12544",
+      "name": "AI Agent",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        608,
+        192
+      ],
+      "id": "a65ded12-e8bc-4797-b843-f233e2182bdc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "61mPOssWPcRieaYN",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "1QrVyzB2d8EBl6fqTyuEUTlDyc2NBaUXo",
+        "title": "=Research Summary - {{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -112
+      ],
+      "id": "6c1678e1-5a68-4937-875e-adffcd6931ad",
+      "name": "Google Docs - Create",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "HoxUny5FVlUMnQqG",
+          "name": "Google Docs account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "research-topic",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        48,
+        -96
+      ],
+      "id": "e1381dd6-9c49-4b19-a32f-61afedbe06b0",
+      "name": "Webhook",
+      "webhookId": "c7f406c6-250b-4907-8fd5-815c19f197ba",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "=Research Summary – {{$node[\"Webhook\"].json[\"body\"][\"topic\"]}}",
+        "limit": 1,
+        "filter": {},
+        "options": {
+          "fields": [
+            "webViewLink"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1376,
+        64
+      ],
+      "id": "ba0e5c48-9c06-451a-b2ba-080ebe95d8a7",
+      "name": "Google Drive - Search",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "4bMSSPa5ooseTzGW",
+          "name": "Google Drive account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Search arXiv Papers": {
+      "main": [
+        [
+          {
+            "node": "Format arXiv Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format arXiv Results": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Google Docs - Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs - Create": {
+      "main": [
+        [
+          {
+            "node": "Google Drive - Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Search arXiv Papers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive - Search": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a663bb4c-5639-4469-a037-f5d54b2c518a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5fc1ba0c9286276302660e6f5eef93d39044749755b9edb9fa26653ba97d445f"
+  },
+  "id": "DnBqyUusDnEJjvLD",
+  "tags": []
+}
