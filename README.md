@@ -63,8 +63,11 @@ Make sure you have the following ready before starting:
 
 
 ---
+
+##  Workflow
 <img width="1591" height="552" alt="image" src="https://github.com/user-attachments/assets/df4ce25e-cc65-4452-afa5-e7c85054025b" />
 
+---
 ## 🎥 Demo Video  
 Check out the workflow in action here:  
 [▶️ Watch Demo](https://github.com/sreenavyach15/AgenticAI-ResearchSummarizer-Project/blob/main/WorkflowExecution.mp4)  
@@ -77,5 +80,6 @@ Send this via a **POST** request to your **Webhook URL**:
 {
   "topic": "AI in healthcare"
 }
+
 
 
