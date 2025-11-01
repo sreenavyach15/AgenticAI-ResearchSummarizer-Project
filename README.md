@@ -67,6 +67,9 @@ Make sure you have the following ready before starting:
 ##  Workflow
 <img width="1591" height="552" alt="image" src="https://github.com/user-attachments/assets/df4ce25e-cc65-4452-afa5-e7c85054025b" />
 
+<img width="1742" height="970" alt="image" src="https://github.com/user-attachments/assets/537ba92b-6fdd-40a7-ad6f-8526c9518a6e" />
+
+
 ---
 ## 🎥 Demo Video  
 Check out the workflow in action here:  
@@ -80,6 +83,7 @@ Send this via a **POST** request to your **Webhook URL**:
 {
   "topic": "AI in healthcare"
 }
+
 
 
 
