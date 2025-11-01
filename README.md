@@ -75,6 +75,10 @@ Make sure you have the following ready before starting:
 Check out the workflow in action here:  
 [▶️ Watch Demo](https://github.com/sreenavyach15/AgenticAI-ResearchSummarizer-Project/blob/main/WorkflowExecution.mp4)  
 
+## Presentation Link: 
+https://github.com/sreenavyach15/AgenticAI-ResearchSummarizer-Project/blob/main/Research-Paper-Summarizer.pptx
+
+
 ---
 
 ## 🧭 Example JSON (Postman)  
@@ -83,6 +87,7 @@ Send this via a **POST** request to your **Webhook URL**:
 {
   "topic": "AI in healthcare"
 }
+
 
 
 
